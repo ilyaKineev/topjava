@@ -16,14 +16,12 @@
         <th>Date</th>
         <th>Description</th>
         <th>Calories</th>
-        <th>Excess</th>
     </tr>
     <c:forEach items="${listMealTo}" var="mealsTo">
-        <tr style="color:${ (mealsTo.isExcess() == true ? 'green' : 'red')}">
+        <tr style="color:${ (mealsTo.isExcess() ? 'red' : 'green')}">
             <td>${mealsTo.getDate()} ${mealsTo.getTime()}</td>
             <td>${mealsTo.getDescription() }</td>
             <td>${mealsTo.getCalories()}</td>
-            <td>${mealsTo.isExcess()}</td>
         </tr>
     </c:forEach>
 </table>
