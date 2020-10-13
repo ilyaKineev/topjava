@@ -6,10 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
+import ru.javawebinar.topjava.to.MealTo;
+import ru.javawebinar.topjava.util.MealsUtil;
 import ru.javawebinar.topjava.web.SecurityUtil;
 
-import java.time.LocalDateTime;
-import java.util.Collection;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+
+import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
+import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
 
 @Controller
 public class MealRestController {
@@ -22,6 +28,7 @@ public class MealRestController {
         this.service = service;
     }
 
+
     public Meal get(int id) {
         int userId = SecurityUtil.authUserId();
         log.info("get meal {} for User {}", id, userId);
@@ -30,6 +37,7 @@ public class MealRestController {
 
     public Meal create(Meal meal) {
         int userId = SecurityUtil.authUserId();
+        checkNew(meal);
         log.info("create {} for User {}", meal, userId);
         return service.create(meal, userId);
     }
@@ -42,20 +50,27 @@ public class MealRestController {
 
     public void update(Meal meal, int id) {
         int userId = SecurityUtil.authUserId();
+        assureIdConsistent(meal, id);
         log.info("update {} with id={} for User {}", meal, id, userId);
         service.update(meal, userId);
     }
 
-    public Collection<Meal> getAll() {
+    public List<MealTo> getAll() {
         int userId = SecurityUtil.authUserId();
         log.info("getAll for User {}", userId);
-        return service.getAll(userId);
+        return MealsUtil.getTos(service.getAll(userId), SecurityUtil.authUserCaloriesPerDay());
     }
 
-    public Collection<Meal> getAllBetween(LocalDateTime startDateTime,
-                                          LocalDateTime endDateTime) {
+    public List<MealTo> getAllBetween(LocalDate startDate,
+                                      LocalTime startTime,
+                                      LocalDate endDate,
+                                      LocalTime endTime
+    ) {
         int userId = SecurityUtil.authUserId();
-        log.info("getAll for User {} between {} and {}", userId, startDateTime, endDateTime);
-        return service.getAllBetween(startDateTime, endDateTime, userId);
+        log.info("getAll for User {} between {} {} and {} {}", userId, startDate, startTime, endDate, endTime);
+        return MealsUtil.getFilteredTos(service.getAll(userId),
+                SecurityUtil.authUserCaloriesPerDay(),
+                startTime,
+                endTime);
     }
 }

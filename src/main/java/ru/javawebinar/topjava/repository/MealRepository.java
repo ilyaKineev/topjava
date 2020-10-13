@@ -13,7 +13,7 @@ public interface MealRepository {
 
     Meal get(int id, int userId);
 
-    Collection<Meal> getAll(int userId);
+    List<Meal> getAll(int userId);
 
-    Collection<Meal> getAllBetween(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId);
+    List<Meal> getAllBetween(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId);
 }
