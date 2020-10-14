@@ -1,11 +1,11 @@
 package ru.javawebinar.topjava.repository.inmemory;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
-import ru.javawebinar.topjava.web.SecurityUtil;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Repository
@@ -21,7 +22,7 @@ public class InMemoryMealRepository implements MealRepository {
     private final AtomicInteger counter = new AtomicInteger(0);
 
     {
-        MealsUtil.meals.forEach(meal -> save(meal, SecurityUtil.authUserId()));
+        MealsUtil.meals.forEach(meal -> save(meal, 1));
     }
 
     @Override
@@ -30,17 +31,15 @@ public class InMemoryMealRepository implements MealRepository {
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
             meals.put(meal.getId(), meal);
-            return null;
-        } else {
-            meals.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
             return meal;
         }
+        return meals.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
     }
 
     @Override
     public boolean delete(int id, int userId) {
         Map<Integer, Meal> meals = mealRepository.get(userId);
-        return meals.remove(id) != null;
+        return meals != null && meals.remove(id) != null;
     }
 
     @Override
@@ -51,20 +50,26 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public List<Meal> getAll(int userId) {
-        Map<Integer, Meal> meals = mealRepository.get(userId);
-        return meals.values().stream()
-                .sorted(Comparator.comparing(Meal::getDateTime).reversed())
-                .collect(Collectors.toList());
+        return getAllFiltered(userId, meal -> true);
     }
 
+    @Override
     public List<Meal> getAllBetween(LocalDateTime startDateTime,
                                     LocalDateTime endDateTime,
                                     int userId) {
-        return getAll(userId).stream()
-                .filter(m -> DateTimeUtil.isBetweenHalfOpen(m.getTime(),
-                        startDateTime.toLocalTime(),
-                        endDateTime.toLocalTime()))
-                .collect(Collectors.toList());
+        return getAllFiltered(userId,
+                meal -> DateTimeUtil.isBetweenInclusive(meal.getDateTime(),
+                        startDateTime,
+                        endDateTime));
+    }
+
+    private List<Meal> getAllFiltered(int userId, Predicate<Meal> filter) {
+        Map<Integer, Meal> meals = mealRepository.get(userId);
+        return meals.isEmpty() ? null :
+                meals.values().stream()
+                        .filter(filter)
+                        .sorted(Comparator.comparing(Meal::getDateTime).reversed())
+                        .collect(Collectors.toList());
     }
 }
 

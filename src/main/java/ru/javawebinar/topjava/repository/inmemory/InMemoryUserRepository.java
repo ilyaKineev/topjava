@@ -26,7 +26,7 @@ public class InMemoryUserRepository implements UserRepository {
         if (user.isNew()) {
             user.setId(counter.incrementAndGet());
             userRepository.put(user.getId(), user);
-            return null;
+            return user;
         } else {
             return userRepository.computeIfPresent(user.getId(), (id, oldUser) -> user);
         }
@@ -52,6 +52,4 @@ public class InMemoryUserRepository implements UserRepository {
                 .filter(e -> email.equals(e.getEmail()))
                 .findFirst().orElse(null);
     }
-
-
 }

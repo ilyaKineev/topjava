@@ -20,20 +20,20 @@ public class MealService {
         this.mealRepository = repository;
     }
 
-    public Meal create(Meal meal , int userId) {
+    public Meal create(Meal meal, int userId) {
         return mealRepository.save(meal, userId);
     }
 
-    public void delete(int id,int userId) {
-        checkNotFoundWithId(mealRepository.delete(id,userId), id);
+    public void delete(int id, int userId) {
+        checkNotFoundWithId(mealRepository.delete(id, userId), id);
     }
 
     public Meal get(int id, int userId) {
-        return checkNotFoundWithId(mealRepository.get(id,userId), id);
+        return checkNotFoundWithId(mealRepository.get(id, userId), id);
     }
 
-    public void update(Meal meal,int userId) {
-        checkNotFoundWithId(mealRepository.save(meal,userId), meal.getId());
+    public void update(Meal meal, int userId) {
+        checkNotFoundWithId(mealRepository.save(meal, userId), meal.getId());
     }
 
     public List<Meal> getAll(int userId) {
@@ -41,6 +41,6 @@ public class MealService {
     }
 
     public List<Meal> getAllBetween(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
-        return mealRepository.getAllBetween(startDateTime,endDateTime,userId);
+        return mealRepository.getAllBetween(startDateTime, endDateTime, userId);
     }
 }

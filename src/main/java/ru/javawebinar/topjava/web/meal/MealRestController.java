@@ -19,8 +19,7 @@ import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
 
 @Controller
 public class MealRestController {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
-
+    private static final Logger log = LoggerFactory.getLogger(MealRestController.class);
     private final MealService service;
 
     @Autowired
