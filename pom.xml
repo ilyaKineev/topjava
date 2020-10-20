@@ -21,7 +21,6 @@
         <!-- Logging -->
         <logback.version>1.2.3</logback.version>
         <slf4j.version>1.7.30</slf4j.version>
-
         <!--DB-->
         <postgresql.version>42.2.17</postgresql.version>
         <!--    Tests  -->
@@ -128,6 +127,12 @@
             <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
     </dependencies>
 
     <profiles>
