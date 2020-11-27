@@ -33,8 +33,8 @@ public class InMemoryAdminRestControllerTest {
         appCtx.close();
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setup() {
         // re-initialize
         repository.init();
     }
