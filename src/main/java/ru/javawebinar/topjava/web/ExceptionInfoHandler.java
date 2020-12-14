@@ -19,6 +19,7 @@ import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ValidationException;
 
 import static ru.javawebinar.topjava.util.exception.ErrorType.*;
 
@@ -37,11 +38,17 @@ public class ExceptionInfoHandler {
     @ResponseStatus(HttpStatus.CONFLICT)  // 409
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ErrorInfo conflict(HttpServletRequest req, DataIntegrityViolationException e) {
-        return logAndGetErrorInfo(req, e, true, DATA_ERROR);
+        Throwable rootCause = ValidationUtil.getRootCause(e);
+        log.error(DATA_ERROR + " at request " + req.getRequestURL(), rootCause);
+        if (rootCause.toString().contains("users_unique_email_idx"))
+            return new ErrorInfo(req.getRequestURL(), DATA_ERROR, "User with this email already exists");
+        if (rootCause.toString().contains("meals_unique_user_datetime_idx"))
+            return new ErrorInfo(req.getRequestURL(), DATA_ERROR, "Meal with these Date and Time already exists");
+        return new ErrorInfo(req.getRequestURL(), DATA_ERROR, rootCause.toString());
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
-    @ExceptionHandler({IllegalRequestDataException.class, MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
+    @ExceptionHandler({IllegalRequestDataException.class, ValidationException.class, MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
     public ErrorInfo illegalRequestDataError(HttpServletRequest req, Exception e) {
         return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
     }
